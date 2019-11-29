@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- sql映射文件 -->
+
+<!-- namespace：命名空间 ,指定为接口全类名 -->
+<mapper namespace="com.daralisdan.dao.EmployeeMapper">
+
+	<select id="getEmpId" resultType="com.daralisdan.bean.Employee">
+		select * from tbl_employee
+		where id = #{id}
+	</select>
+
+	<insert id="addEmp" parameterType="com.daralisdan.bean.Employee"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into
+		tbl_employee(last_name,gender,email)
+		values
+		(#{lastName},#{gender},#{email})
+	</insert>
+
+	<!-- //修改 public void updateEmp(Employee employee); -->
+	<update id="updateEmp">
+		update tbl_employee
+		set
+		last_name=#{lastName},gender=#{gender},email=#{email}
+		where id=#{id}
+	</update>
+
+
+
+	<!-- //删除 public void deleteEmpById(Integer id); -->
+	<delete id="deleteEmpById">
+		delete from tbl_employee where id=#{id}
+	</delete>
+
+	<!-- // 批量保存操作 public Long batchAddEmp(Employee employee); -->
+	<insert id="batchAddEmp">
+		insert into
+		tbl_employee(last_name,gender,email)
+		values
+		(#{lastName},#{gender},#{email})
+	</insert>
+	<!-- ============================================================================================== -->
+	<!-- oracle下的存储过程 -->
+	<!-- //mybatis 调用存储过程 public void getPageByProcedure(); 1.增删改查用select标签 
+		定义存储过程 2.statementType="CALLABLE": 使用该属性调用存储过程 #{start,model=IN,jdbcType=INTEGER} 
+		:start 表示实体类中的第一个参数， Model=In：告诉mybatis 它是一个输入参数 jdbcType=INTEGER：告诉mybatis 
+		它的jdbc类型 model=out:表示它是一个输出参数 #{emps,model=OUT,jdbcType=CURSOR}:存储游标 -->
+	<!-- <select id="getPageByProcedure" statementType="CALLABLE"> {call hello_test( 
+		#{start,model=IN,jdbcType=INTEGER}, #{end,model=IN,jdbcType=INTEGER}, #{count,model=OUT,jdbcType=INTEGER}, 
+		#{emps,model=OUT,jdbcType=CURSOR,javaType=ResultSet,ResultMap=PageEmp}, )} 
+		</select> <resultMap type="com.daralisdan.bean.Employee" id="PageEmp"> <id 
+		column="id" property="id" /> <result column="last_name" property="lastName" 
+		/> <result column="email" property="email" /> </resultMap> -->
+</mapper>

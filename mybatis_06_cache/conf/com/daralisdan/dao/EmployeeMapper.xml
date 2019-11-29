@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- sql映射文件 -->
+
+
+
+<!-- namespace：命名空间 ,指定为接口全类名 -->
+<mapper namespace="com.daralisdan.dao.EmployeeMapper">
+
+	<!-- 开启二级缓存配置,只需要设置默认就可以了 -->
+	<cache></cache>
+	<!--eviction: 缓存的回收策略 • LRU – 最近最少使用的：移除最长时间不被使用的对象。 • FIFO – 先进先出：按对象进入缓存的顺序来移除它们。 
+		• SOFT – 软引用：移除基于垃圾回收器状态和软引用规则的对象。 • WEAK – 弱引用：更积极地移除基于垃圾收集器状态和弱引用规则的对象。 
+		• 默认的是 LRU。 flushInterval: 缓存刷新间隔，缓存多长时间清空一次，默认不清空，以毫秒为单位 readOnly: 是否只读 
+		true：只读，mybatis认为所有从缓存中获取数据的操作都是只读操作，不会修改操作 mybatis为了加快速度，直接就会将数据在缓存中引用交给用户，不安全，速度快 
+		false：非只读，mybatis认为获取的数据可能会被修改。mybatis会利用序列化和反序列化的技术克隆一份数据给你安全，速度慢 默认false 
+		size: 缓存中保存多少个元素 type:指定自定义的全类名，实现casche接口 -->
+
+
+
+
+
+
+
+
+
+	<!-- ========================================================================================================== -->
+	<!-- id:唯一标识 resultType：返回值类型 #{id}：从传递过来的参数中取出id值 -->
+	<!-- <select id="selectById" resultType="com.daralisdan.bean.Employee"> 
+		select id,last_name lastName,gender,email from tbl_employee where id = #{id} 
+		</select> -->
+
+	<!-- public Employee getEmpId(Integer id); last_name 开启驼峰命名之后可以转换为lastName 
+		#{参数名}：表示取出的值 (传递一个参数时，参数名可以随便写都不影响结果) -->
+	<!-- <select id="getEmpId" resultType="com.daralisdan.bean.Employee"> select 
+		* from tbl_employee where id = #{idac} </select> -->
+	<!-- public Employee getEmpId(Integer id); last_name 开启驼峰命名之后可以转换为lastName -->
+	<select id="getEmpId" resultType="com.daralisdan.bean.Employee">
+		select * from tbl_employee
+		where id = #{id}
+	</select>
+
+	<!-- emp表示employee类的别名，但是推荐全类名，这样可以追踪到某个类 databaseId: 在mybatis映射文件中告诉mybatis 
+		该sql语句是哪个数据库厂商发的 -->
+	<!-- <select id="getEmpId" resultType="emp"> select * from tbl_employee 
+		where id = #{id} </select> -->
+
+	<!-- //增加 public void addEmp(Employee employee); parameterType:可以省略 获取自增主键的值： 
+		mysql支持自增主键，自增主键的获取，mybatis也可以利用statement.getGenreateKeys(); useGeneratedKeys="true":使用自增主键获取主键值的策略 
+		keyProperty="id"：指定对应主键属性，也就是mybatis获取到主键值后，将这个值封装给javabean的哪个属性 -->
+	<insert id="addEmp" parameterType="com.daralisdan.bean.Employee"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into
+		tbl_employee(last_name,gender,email)
+		values
+		(#{lastName},#{gender},#{email})
+	</insert>
+
+	<!-- //修改 public void updateEmp(Employee employee); -->
+	<update id="updateEmp">
+		update tbl_employee
+		set
+		last_name=#{lastName},gender=#{gender},email=#{email}
+		where id=#{id}
+	</update>
+
+
+	<!-- //删除 public void deleteEmpById(Integer id); -->
+	<delete id="deleteEmpById">
+		delete from tbl_employee where id=#{id}
+	</delete>
+
+
+	<!-- 传入多个参数时，查询 public Employee getEmpIdAndLastName(Integer id, String lastName); -->
+	<!-- <select id="getEmpIdAndLastName" resultType="com.daralisdan.bean.Employee"> 
+		select * from tbl_employee where id = #{param1} and last_name=#{param2} </select> -->
+	<select id="getEmpIdAndLastName"
+		resultType="com.daralisdan.bean.Employee">
+		select * from tbl_employee
+		where id = #{id} and
+		last_name=#{lastName}
+	</select>
+
+	<!-- public Employee getEmpByMap(Map<String, Object> map); -->
+	<select id="getEmpByMap"
+		resultType="com.daralisdan.bean.Employee">
+		select * from tbl_employee
+		where id = #{id} and
+		last_name=#{lastName}
+	</select>
+
+	<!-- public List<Employee> getEmpByLastNameLike(String lastName); resultType 
+		:返回值类型，如果集合中返回的是一个集合，要写集合中元素的类型 -->
+	<select id="getEmpByLastNameLike"
+		resultType="com.daralisdan.bean.Employee">
+		select * from tbl_employee
+		where last_name like #{lastName}
+	</select>
+
+	<!-- //返回一条记录的map,key就是列名，值就是对应的值 public Map<String, Object> getEmpByIdReturnMap(Integer 
+		id); Object:让Map中能放所有类型 resultType: 把数据封装成map 返回值类型写成map(是因为mybatis为jdk中常用类起的别名) -->
+	<select id="getEmpByIdReturnMap" resultType="map">
+		select * from
+		tbl_employee
+		where id = #{id}
+	</select>
+
+	<!--// 多条记录封装一个map, Map<String, Employee> 键是这条记录的主键，值是封装后的javaBean public 
+		Map<String,Employee> getEmpByLastNameLikeReturnMap(String lastName); resultType:返回值类型 
+		把每一条记录封装成Employee对象，要写集合中元素的类型 -->
+	<select id="getEmpByLastNameLikeReturnMap"
+		resultType="com.daralisdan.bean.Employee">
+		select * from
+		tbl_employee
+		where last_name like #{lastName}
+	</select>
+
+</mapper>

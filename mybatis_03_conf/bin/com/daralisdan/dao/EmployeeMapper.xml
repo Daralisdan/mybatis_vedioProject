@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <!-- sql映射文件 -->
+ 
+ <!-- namespace：命名空间 ,指定为接口全类名-->
+<mapper namespace="com.daralisdan.dao.EmployeeMapper">
+
+<!-- id:唯一标识
+resultType：返回值类型
+#{id}：从传递过来的参数中取出id值
+ -->
+	<!-- <select id="selectById"
+		resultType="com.daralisdan.bean.Employee">
+		select id,last_name lastName,gender,email from tbl_employee where id = #{id}
+	</select> -->
+	
+	<!--  public Employee getEmpId(Integer id);
+	last_name 开启驼峰命名之后可以转换为lastName -->
+	<!-- <select id="getEmpId"
+		resultType="com.daralisdan.bean.Employee">
+		select * from tbl_employee where id = #{id}
+	</select> -->
+	
+	<!-- emp表示employee类的别名，但是推荐全类名，这样可以追踪到某个类 
+		databaseId: 在mybatis映射文件中告诉mybatis 该sql语句是哪个数据库厂商发的
+	-->
+	
+	 <select id="getEmpId"
+		resultType="emp">
+		select * from tbl_employee where id = #{id}
+	</select> 
+	
+</mapper>

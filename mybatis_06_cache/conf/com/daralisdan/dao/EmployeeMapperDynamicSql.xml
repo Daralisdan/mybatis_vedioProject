@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.daralisdan.dao.EmployeeMapperDynamicSql">
+	 <!-- • if
+	• choose (when, otherwise)
+	• trim (where, set)
+	• foreach
+	 -->
+ <!--• if
+    查询员工，要求：携带了哪个字段查询条件就带上哪个这个字段的值
+    public List<Employee> getEmpsByConditionIf(Employee employee);
+   -->
+   
+   <!-- 查询的时候如果某些条件没带可能sql拼装问题
+       *  解决办法:
+       *  1.给where 后面加上1=1，以后的条件都加上and xxx
+       * 2.mybatis使用where 标签来将所有的查询条件包括在内,mybatis就会将where标签中拼装的sql,多出来的and或者or去掉，
+       *  但是如果把and写在sql语句之后就不好使了
+       *  where只会去掉第一个多出来的or或者and -->
+       
+	 <select id="getEmpsByConditionIf"
+		resultType="com.daralisdan.bean.Employee">
+		select * from tbl_employee
+<!--=========== 1.给where 后面加上1=1，以后的条件都加上and xxx -->
+		
+		<!-- where 1=1
+		test：判断表达式（OGNL）
+		从参数中取值判断
+		&quot;&quot; 表示空格（转义字符）
+		
+		<if test="id!=null">
+			and id=#{id}
+		</if>
+		<if test="lastName!=null and lastName!=''">
+			and last_name like #{lastName}
+		</if>
+		ognl会进行字符串与数字的转换判断 "0"==0
+		<if test="gender==0 or gender==1">
+		and gender =#{gender}
+		</if>
+		<if test="email!=null">
+		and email=#{email}
+		</if> -->
+<!-- ===========2.mybatis使用where 标签来将所有的查询条件包括在内,mybatis就会将where标签中拼装的sql,多出来的and或者or去掉，
+       *  但是如果把and写在sql语句之后就不好使了
+       *  where只会去掉第一个多出来的or或者and================================== -->
+		
+		<!-- test：判断表达式（OGNL）
+		从参数中取值判断
+		&quot;&quot; 表示空格（转义字符）
+		 -->
+		<where>
+			<if test="id!=null">
+				id=#{id}
+			</if>
+			<if test="lastName!=null and lastName!=''">
+				and last_name like #{lastName}
+			</if>
+			<!-- ognl会进行字符串与数字的转换判断 "0"==0 -->
+			<if test="gender==0 or gender==1">
+				and gender =#{gender}
+			</if>
+			<if test="email!=null">
+				and email=#{email}
+			</if>
+		</where>
+	</select>
+ 
+ 
+ <!-- trim自定义字符串截取规则 -->
+ <!-- public List<Employee> getEmpsByConditionTrim(Employee employee); -->
+	<select id="getEmpsByConditionTrim"
+		resultType="com.daralisdan.bean.Employee">
+		select * from tbl_employee
+		<!-- 后面多出来的and或者or where标签解决不了
+		prefix="" ：前缀，trim标签中是整个字符串的拼串后的结果，prefix给拼串后的整个字符串加一个前缀
+		prefixOverrides="" ：前缀覆盖,去掉整个字符串前面多余的字符串
+		suffix=""  ：后缀，给拼串后的整个字符串加一个后缀
+		suffixOverrides="" ：后缀覆盖：去掉整个字符串后边多余的字符串
+		 -->
+		<trim prefix="where" suffixOverrides="and">
+			<if test="id!=null">
+				id=#{id} and
+			</if>
+			<if test="lastName!=null and lastName!=''">
+				 last_name like #{lastName} and
+			</if>
+			<!-- ognl会进行字符串与数字的转换判断 "0"==0 -->
+			<if test="gender==0 or gender==1">
+				 gender =#{gender} and
+			</if>
+			<if test="email!=null">
+				email=#{email}
+			</if>
+		</trim>
+	</select>
+	
+ <!--  // choose 带有break的switch，带有哪个属性的值就用哪个属性查询数据，只会进入其中一个
+  public List<Employee> getEmpsByConditionChoose(Employee employee); -->
+
+<select id="getEmpsByConditionChoose"
+	resultType="com.daralisdan.bean.Employee">
+	select * from tbl_employee
+	<where>
+		<!-- 带有哪个属性的值就用哪个属性查询数据，只会进入其中一个 -->
+		<choose>
+			<when test="id!=null">
+				id=#{id} 
+			</when>
+			<when test="lastName!=null">
+			 last_name like #{lastName} 
+			</when>
+			<when test="email!=null">
+			email=#{email}
+			</when>
+			<!-- 不带上述参数就是查询所有 -->
+			<otherwise>
+			1=1
+			</otherwise>
+		</choose>
+	</where>
+</select>
+<!-- ==================================================================== -->
+
+<!--  // set 更新
+  public void updateEmp(Employee employee); -->
+
+	<update id="updateEmp">
+	<!-- set标签 -->
+	<!-- update tbl_employee
+	<set>
+		<if test="lastName!=null">
+			last_name=#{lastName},
+		</if>
+		<if test="gender!=null">
+			gender=#{gender},
+		</if>
+		<if test="email!=null">
+			email=#{email}
+		</if>
+	</set>
+	where id=#{id} -->
+
+<!-- trim拼接字符串更新 -->
+
+	update tbl_employee
+	<trim prefix="set" suffixOverrides=",">
+		<if test="lastName!=null">
+			last_name=#{lastName},
+		</if>
+		<if test="gender!=null">
+			gender=#{gender},
+		</if>
+		<if test="email!=null">
+			email=#{email}
+		</if>
+	</trim>
+	where id=#{id}
+</update>
+
+<!-- // 查询员工id在给定的集合中
+  public List<Employee> getEmpByConditionForeach(@Param("ids") List<Integer> ids);
+ -->
+<select id="getEmpByConditionForeach"
+	resultType="com.daralisdan.bean.Employee">
+	select * from tbl_employee where id in
+	
+	<!-- collection:指定要遍历的集合
+	      list类型的参数会特殊处理封装在map中，map的key就叫list
+	      item：将当前遍历出的元素赋值给指定的变量
+	      separator:表示每个元素之间的分隔符
+	      open:遍历出所有结果拼接一个开始的字符
+	      close:遍历出所有结果拼接一个结束的字符
+	      index：索引，遍历list的时候，index是索引，item就是当前值
+	                  遍历map的时候，index表示的就是map的key,item就是map的值
+	      
+	      #{变量名}就能取出变量的值也就是当前遍历的元素
+	      
+	 -->
+	<foreach collection="ids" item="item_id" separator=","
+	open="(" close=")">
+	#{item_id}
+</foreach>
+</select>
+
+<!-- // 批量保存
+  public void addEmps(@Param("emps") List<Employee> emps); -->
+	<insert id="addEmps">
+		insert into tbl_employee(last_name,email,gender,d_id)
+		values
+		<foreach collection="emps" item="emp" separator=",">
+			(#{emp.lastName},#{emp.email},#{emp.gender},#{emp.dept.id})
+		</foreach>
+	</insert>  
+  <!-- 第二种 批量保存方法,这种方法需要在数据库连接池中添加配置属性 allowMultiQueries=true
+  allowMultiQueries=true：表示允许使用";"来分割多条查询，默认false
+  
+  -->
+<!-- <insert id="addEmps">
+	<foreach collection="emps" item="emp" separator=";">
+		insert into
+		tbl_employee(last_name,email,gender,d_id)
+		values(#{emp.lastName},#{emp.email},#{emp.gender},#{emp.dept.id})
+	</foreach>
+</insert>  
+ -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</mapper>

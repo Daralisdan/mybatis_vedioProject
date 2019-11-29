@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- spring的配置 ：管理业务逻辑组件 -->
+	<!-- 1.spring扫描其他组件，controller除外 -->
+	<context:component-scan
+		base-package="com.daralisdan">
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<!-- 3.引入数据库的配置文件 -->
+	<context:property-placeholder
+		location="classpath:dbconfig.properties" />
+	<!-- spring控制业务逻辑 ，数据源，事物控制，aop -->
+	<!--2. 数据源 -->
+	<bean id="dataSource"
+		class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="jdbcUrl" value="${jdbc.url}"></property>
+		<property name="driverClass" value="${jdbc.driver}"></property>
+		<property name="user" value="${jdbc.user}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+
+	<!-- 4.spring事物管理器，如何管理事物 -->
+	<bean id="dataSourceTransactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- 如果要控制事物就必须控制住数据库连接词里边的所有连接 -->
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<!-- 6.开启基于注解事物 -->
+	<tx:annotation-driven
+		transaction-manager="dataSourceTransactionManager" />
+
+	<!--5.整合mybatis 目的：1.spring管理所有组件，mapper实现类 service====>Dao @Autowired:自动注入mapper 
+		2.用来管理事物：spring声明式事物 -->
+
+	<!-- 7.注册sqlsession,创建出sqlsessionFactor对象 -->
+	<bean id="sqlSessionFactoryBean"
+		class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 指定数据源 -->
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- configLocation:指定配置文件的 -->
+		<property name="configLocation"
+			value="classpath:mybatis-conf.xml"></property>
+
+		<!--dao接口与mapper映射文件不在同一包下时指定xml映射文件的位置，在同一包下时直接在全局配置文件Mappers属性注册包 -->
+		<property name="mapperLocations"
+			value="classpath:mybatis/mapper/*.xml"></property>
+	</bean>
+
+
+	<!-- 批量操作与spring整合 -->
+	<!-- <bean id="sqlSession"
+		class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg name="sqlSessionFactory"
+			ref="sqlSessionFactoryBean"></constructor-arg>
+		<constructor-arg name="executorType" value="BATCH"></constructor-arg>
+	</bean>
+ -->
+
+
+
+	<!-- 扫描所有mapper接口的实现，让这些mapper能够自动注入 base-package:指定mapper接口实现的包 -->
+	<!-- <context:component-scan base-package=com.daralisdan.dao/> -->
+	<!-- 扫描配置 -->
+	<bean id="mapperScannerConfigurer"
+		class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.daralisdan.dao"></property>
+	</bean>
+</beans>
